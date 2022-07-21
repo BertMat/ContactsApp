@@ -1,4 +1,5 @@
 ﻿using ContactsAppAPI.API.Installers;
+using ContactsAppAPI.Infrastructure.Data;
 
 namespace ContactsAppAPI.API
 {
@@ -27,6 +28,12 @@ namespace ContactsAppAPI.API
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
+            }
+
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
             }
 
             app.UseRouting();

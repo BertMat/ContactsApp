@@ -5,7 +5,8 @@ namespace ContactsAppAPI.Domain.Interfaces
     public interface IContactRepository
     {
         IEnumerable<Contact> GetAll();
-        Contact GetById(int id);
+        IEnumerable<Contact> GetById(IEnumerable<int> ids);
+        Contact GetByIdSingle(int id);
         Contact Add(Contact contact);
         IEnumerable<Contact> AddSerial(IEnumerable<Contact> contacts);
         void Update(Contact contact);

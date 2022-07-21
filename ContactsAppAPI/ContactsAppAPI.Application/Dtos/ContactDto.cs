@@ -1,27 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AutoMapper;
+using ContactsAppAPI.Application.Mappings;
+using ContactsAppAPI.Domain.Entities;
 
-namespace ContactsAppAPI.Domain.Entities
+namespace ContactsAppAPI.Application.Dtos
 {
-    public class Contact
+    public class ContactDto : IMap
     {
-        [Key]
         public int Id { get; set; }
-        [Required]
         public string FirstName { get; set; }
-        [Required]
         public string LastName { get; set; }
-        [Required]
         public string StreetName { get; set; }
-        [Required]
         public string HouseNumber { get; set; }
         public string? ApartmentNumber { get; set; }
-        [Required]
         public string PostalCode { get; set; }
-        [Required]
         public string Town { get; set; }
-        [Required]
         public string PhoneNumber { get; set; }
-        [Required]
         public DateTimeOffset DateOfBirth { get; set; }
+
+        public int Age { get { return DateTime.Today.Year - DateOfBirth.Year; } }
+
+        public void Mapping(Profile profile)
+        {
+            profile.CreateMap<Contact, ContactDto>();
+        }
     }
 }

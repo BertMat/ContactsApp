@@ -1,4 +1,5 @@
-﻿using ContactsAppAPI.Infrastructure;
+﻿using ContactsAppAPI.Application;
+using ContactsAppAPI.Infrastructure;
 namespace ContactsAppAPI.API.Installers
 {
     public static class ArchitectureInstaller
@@ -6,6 +7,7 @@ namespace ContactsAppAPI.API.Installers
         public static void InstallServicesInAssembly(this IServiceCollection services)
         {
             services.AddInfrastructure();
+            services.AddApplication();
             services.AddControllers();
         }
     }

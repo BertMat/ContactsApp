@@ -48,7 +48,11 @@ namespace ContactsAppAPI.Infrastructure.Repositories
             return _applicationDbContext.Contacts;
         }
 
-        public Contact GetById(int id)
+        public IEnumerable<Contact> GetById(IEnumerable<int> ids)
+        {
+            return _applicationDbContext.Contacts.Where(p => ids.Contains(p.Id));
+        }
+        public Contact GetByIdSingle(int id)
         {
             return _applicationDbContext.Contacts.SingleOrDefault(p => p.Id == id);
         }

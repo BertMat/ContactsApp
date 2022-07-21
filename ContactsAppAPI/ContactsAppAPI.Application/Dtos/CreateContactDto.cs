@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AutoMapper;
+using ContactsAppAPI.Application.Mappings;
+using ContactsAppAPI.Domain.Entities;
+using System.ComponentModel.DataAnnotations;
 
-namespace ContactsAppAPI.Domain.Entities
+namespace ContactsAppAPI.Application.Dtos
 {
-    public class Contact
+    public class CreateContactDto : IMap
     {
-        [Key]
-        public int Id { get; set; }
         [Required]
         public string FirstName { get; set; }
         [Required]
@@ -23,5 +24,11 @@ namespace ContactsAppAPI.Domain.Entities
         public string PhoneNumber { get; set; }
         [Required]
         public DateTimeOffset DateOfBirth { get; set; }
+
+
+        public void Mapping(Profile profile)
+        {
+            profile.CreateMap<Contact, CreateContactDto>();
+        }
     }
 }
