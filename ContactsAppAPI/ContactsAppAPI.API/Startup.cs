@@ -1,4 +1,6 @@
-﻿namespace ContactsAppAPI.API
+﻿using ContactsAppAPI.API.Installers;
+
+namespace ContactsAppAPI.API
 {
     public class Startup
     {
@@ -11,9 +13,8 @@
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.InstallServicesInAssembly();
             services.AddEndpointsApiExplorer();
-            services.AddMemoryCache();
-            services.AddSession();
             services.AddSwaggerGen();
 
         }
@@ -27,8 +28,6 @@
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
-            app.UseSession();
 
             app.UseRouting();
 
