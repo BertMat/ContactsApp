@@ -1,6 +1,7 @@
 ﻿using ContactsAppAPI.Domain.Entities;
 using ContactsAppAPI.Domain.Interfaces;
 using ContactsAppAPI.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace ContactsAppAPI.Infrastructure.Repositories
 
         public IEnumerable<Contact> GetById(IEnumerable<int> ids)
         {
-            return _applicationDbContext.Contacts.Where(p => ids.Contains(p.Id));
+            return _applicationDbContext.Contacts.AsNoTracking().Where(p => ids.Contains(p.Id));
         }
         public Contact GetByIdSingle(int id)
         {

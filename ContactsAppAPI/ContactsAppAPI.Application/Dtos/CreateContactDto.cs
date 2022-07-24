@@ -28,6 +28,7 @@ namespace ContactsAppAPI.Application.Dtos
 
         public void Mapping(Profile profile)
         {
+            profile.CreateMap<CreateContactDto, Contact>();
             profile.CreateMap<Contact, CreateContactDto>();
         }
     }

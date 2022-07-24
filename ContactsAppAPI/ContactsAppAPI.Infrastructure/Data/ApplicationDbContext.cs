@@ -5,10 +5,11 @@ namespace ContactsAppAPI.Infrastructure.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public ApplicationDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
         {
-            optionsBuilder.UseSqlite(@"Data Source=Contacts.db");
+
         }
+
         public DbSet<Contact> Contacts { get; set; }
     }
 }

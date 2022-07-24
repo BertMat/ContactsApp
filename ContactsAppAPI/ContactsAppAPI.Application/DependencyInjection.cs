@@ -1,4 +1,5 @@
-﻿using ContactsAppAPI.Application.Interfaces;
+﻿using AutoMapper.EquivalencyExpression;
+using ContactsAppAPI.Application.Interfaces;
 using ContactsAppAPI.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
