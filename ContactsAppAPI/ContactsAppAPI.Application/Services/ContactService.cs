@@ -34,13 +34,15 @@ namespace ContactsAppAPI.Application.Services
         public void DeleteContact(int id)
         {
             var contact = _contactRepository.GetByIdSingle(id);
-            _contactRepository.Delete(contact);
+            if (contact != null)
+                _contactRepository.Delete(contact);
         }
 
         public void DeleteContactSerial(IEnumerable<int> ids)
         {
             var contacts = _contactRepository.GetById(ids);
-            _contactRepository.DeleteSerial(contacts);
+            if (contacts.Any())
+                _contactRepository.DeleteSerial(contacts);
         }
 
         public IEnumerable<ContactDto> GetAllContacts()
@@ -72,6 +74,7 @@ namespace ContactsAppAPI.Application.Services
         public void UpdateContactSerial(IEnumerable<UpdateContactDto> contacts)
         {
             var existingContacts = _contactRepository.GetById(contacts.Select(p => p.Id)).ToList();
+            contacts = contacts.Where(p => existingContacts.Select(x => x.Id).Contains(p.Id));
 
             var updatedContacts = _mapper.Map(contacts, existingContacts);
             _contactRepository.UpdateSerial(updatedContacts);
