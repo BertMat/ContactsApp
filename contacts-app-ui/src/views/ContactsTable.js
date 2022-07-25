@@ -75,12 +75,32 @@ export const ContactsTable = props => {
                 enqueueSnackbar('Error was encountered while trying to add contacts', {variant})
             })
     }
+    async function deleteContacts(credentials)
+    {
+        return API.delete('Contacts/Serial?' + credentials
+          )
+            .then(data => {
+                var variant = 'success'
+                enqueueSnackbar('Contacts have been successfully deleted', {variant})
+                setHandleRefresh(true)
+            })
+            .catch(err => {
+                var variant = 'error'
+                enqueueSnackbar('Error was encountered while trying to delete contacts', {variant})
+            })
+    }
     async function saveData()
     {
         if(newContacts != null && newContacts.length > 0)
         {
             addNewContacts(newContacts)
             setNewContacts([])
+        }
+        if(deletedContactIds != null && deletedContactIds.length > 0)
+        {
+            var idsToDelete = ''
+            var params = deletedContactIds.map(id => {idsToDelete +='ids=' + id + '&'})
+            deleteContacts(idsToDelete)
         }
     }
     function undoChanges()
@@ -199,6 +219,12 @@ export const ContactsTable = props => {
                                             variant='contained'
                                             size='small'
                                             onClick={e => {
+                                                let tmpDelete = [...deletedContactIds]
+                                                tmpDelete.push(row.id)
+                                                setDeletedContactIds(tmpDelete)
+                                                let tmpArray = [...rows]
+                                                tmpArray.splice(tmpArray.indexOf(row), 1)
+                                                setRows(tmpArray)
                                             }}
                                         >
                                             Delete
@@ -236,11 +262,6 @@ export const ContactsTable = props => {
         startIcon={<UndoIcon></UndoIcon>}
         color='warning'
         variant='contained'>Cancel</Button>
-        <Button onClick={fetchData}
-        startIcon={<RefreshIcon></RefreshIcon>}
-        color='secondary'
-        type='submit'
-        variant='contained'>Refresh</Button>
         </ButtonGroup>
     </Paper>
   );
