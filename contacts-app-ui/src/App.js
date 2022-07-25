@@ -5,6 +5,7 @@ import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Grid'
+import { SnackbarProvider, useSnackbar } from 'notistack'
 
 export default function App() {
 
@@ -19,8 +20,11 @@ export default function App() {
             titleTypographyProps={{ variant: 'h6' }}
           />
           <Divider></Divider>
-<CardContent>
+        <CardContent>
+          
+        <SnackbarProvider maxSnack={3}>
         <ContactsTable />
+        </SnackbarProvider>
         </CardContent>
         </Card>
         </Grid>

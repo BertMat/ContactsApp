@@ -8,14 +8,17 @@ import TableRow from '@mui/material/TableRow'
 import TableHead from '@mui/material/TableHead'
 import Button from '@mui/material/Button'
 import AddIcon from '@mui/icons-material/AddBox'
+import SaveIcon from '@mui/icons-material/Save'
 import EditIcon from '@mui/icons-material/Edit'
 import UndoIcon from '@mui/icons-material/Undo'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ButtonGroup from '@mui/material/ButtonGroup'
-import { useState } from "react";
+import FormContactModal from 'src/modals/FormContactModal'
+import Divider from '@mui/material/Divider'
+import { useState, useEffect } from "react";
+import { SnackbarProvider, useSnackbar } from 'notistack'
 import API from 'src/api'
-
 
 const columns = [    
   { id: 'firstName', label: 'First Name', minWidth: 170, align: 'center', includeInHead: true },
@@ -32,9 +35,17 @@ const columns = [
   { id: 'actions', label: 'Actions', minWidth: 50, align: 'center', colSpan: 1, includeInHead: true }
 ]
 export const ContactsTable = props => {
+    const [rows, setRows] = useState([])
     const [contacts, setContacts] = useState([])
+    const [editedContacts, setEditedContacts] = useState([])
+    const [newContacts, setNewContacts] = useState([])
+    const [newContact, setNewContact] = useState()
+    const [deletedContactIds, setDeletedContactIds] = useState([])
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
+    const { enqueueSnackbar } = useSnackbar()
+    const [open, setOpen] = useState(false)
+    const [handleRefresh, setHandleRefresh] = useState(true)
 
     async function fetchData() {    
         return API.get('Contacts', {
@@ -44,17 +55,58 @@ export const ContactsTable = props => {
           })
           .then(data => {
             setContacts(data)
+            setRows(data)
+            handleSuccessVariant('success')
           })
           .catch(err => {
-            console.log(err)
+            handleErrorVariant('error')
           })
       }
+    async function addNewContacts(credentials)
+    {
+        return API.post('Contacts/Serial', JSON.stringify(credentials))
+            .then(data => {
+                var variant = 'success'
+                enqueueSnackbar('Contacts have been successfully added', {variant})
+                setHandleRefresh(true)
+            })
+            .catch(err => {
+                var variant = 'error'
+                enqueueSnackbar('Error was encountered while trying to add contacts', {variant})
+            })
+    }
     async function saveData()
     {
-        
+        if(newContacts != null && newContacts.length > 0)
+        {
+            addNewContacts(newContacts)
+            setNewContacts([])
+        }
+    }
+    function undoChanges()
+    {
+        setRows(contacts)
+        setNewContact(null)
+        setNewContacts([])
+        setDeletedContactIds([])
+        setEditedContacts([])
     }
 
-      
+    function handleOpen()
+    {
+        setOpen(true)
+    }
+    function handleClose()
+    {
+        setOpen(false)
+    }
+  function handleSuccessVariant(variant) {
+    enqueueSnackbar('Contacts have been successfully refreshed', { variant })
+  }
+  function handleErrorVariant(variant) {
+    enqueueSnackbar('Error was encountered while refreshing the contact list', { variant })
+  }
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
@@ -63,8 +115,35 @@ export const ContactsTable = props => {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
+  useEffect(() =>
+  {
+    if(newContact != null)
+        {
+            let tmpArray = [...contacts]
+            let newArray = [...newContacts]
+            newArray.push(newContact)
+            tmpArray.push(...newArray)
+            setRows(tmpArray)
+            setNewContacts(newArray)
+            setNewContact(null)
+        }
+  }, [newContact])
+
+  useEffect(() =>
+  {
+    if(handleRefresh)
+    {
+        fetchData()
+        setHandleRefresh(false)
+    }
+  }, [handleRefresh])
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+        <SnackbarProvider maxSnack={3}>
+            <FormContactModal open={open} setOpen={setOpen} handleOpen={handleOpen} handleClose={handleClose}
+            newContact={newContact} setNewContact={setNewContact}
+            ></FormContactModal>
+        </SnackbarProvider>
         <TableContainer sx={{ minHeight: 200, maxHeight: 440 }}>
             <Table>
                 <TableHead>
@@ -80,7 +159,7 @@ export const ContactsTable = props => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {contacts
+                    {rows
                         .map(row =>
                         {
                             return (
@@ -141,18 +220,27 @@ export const ContactsTable = props => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
-        <ButtonGroup variant='text' aria-label='outlined primary button group'>
-        <Button onClick={saveData}        
+      <Divider></Divider>
+        <ButtonGroup variant='text' aria-label='outlined primary button group' sx={{ margin: 1}}>
+        <Button onClick={handleOpen}    
+        startIcon={<AddIcon></AddIcon>}    
         color='success'
         type='submit'
-        variant='contained'><AddIcon></AddIcon> Save changes</Button>
-        <Button onClick={saveData}        
+        variant='contained'>Add new contact</Button>
+        <Button onClick={saveData}
+        startIcon={<SaveIcon></SaveIcon>}    
+        color='info'
+        type='submit'
+        variant='contained'>Save changes</Button>
+        <Button onClick={undoChanges}
+        startIcon={<UndoIcon></UndoIcon>}
         color='warning'
-        variant='contained'><UndoIcon></UndoIcon> Cancel</Button>
-        <Button onClick={fetchData}        
+        variant='contained'>Cancel</Button>
+        <Button onClick={fetchData}
+        startIcon={<RefreshIcon></RefreshIcon>}
         color='secondary'
         type='submit'
-        variant='contained'><RefreshIcon></RefreshIcon> Refresh</Button>
+        variant='contained'>Refresh</Button>
         </ButtonGroup>
     </Paper>
   );
