@@ -74,7 +74,7 @@ namespace ContactsAppAPI.Application.Services
         public void UpdateContactSerial(IEnumerable<UpdateContactDto> contacts)
         {
             var existingContacts = _contactRepository.GetById(contacts.Select(p => p.Id)).ToList();
-            contacts = contacts.Where(p => existingContacts.Select(x => x.Id).Contains(p.Id));
+            contacts = contacts.Where(p => existingContacts.Select(x => x.Id).Contains(p.Id)).ToList();
 
             var updatedContacts = _mapper.Map(contacts, existingContacts);
             _contactRepository.UpdateSerial(updatedContacts);

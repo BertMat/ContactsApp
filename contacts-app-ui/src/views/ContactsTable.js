@@ -12,15 +12,16 @@ import SaveIcon from '@mui/icons-material/Save'
 import EditIcon from '@mui/icons-material/Edit'
 import UndoIcon from '@mui/icons-material/Undo'
 import DeleteIcon from '@mui/icons-material/Delete'
-import RefreshIcon from '@mui/icons-material/Refresh'
 import ButtonGroup from '@mui/material/ButtonGroup'
 import FormContactModal from 'src/modals/FormContactModal'
+import FormContactEditModal from 'src/modals/FormContactEditModal'
 import Divider from '@mui/material/Divider'
 import { useState, useEffect } from "react";
 import { SnackbarProvider, useSnackbar } from 'notistack'
 import API from 'src/api'
 
 const columns = [    
+  { id: 'id', label: 'Id', minWidth: 50, align: 'center', includeInHead: false },
   { id: 'firstName', label: 'First Name', minWidth: 170, align: 'center', includeInHead: true },
   { id: 'lastName', label: 'Last Name', minWidth: 170, align: 'center', includeInHead: true },
   { id: 'streetName', label: 'Street Name', minWidth: 170, align: 'center', includeInHead: true },
@@ -38,6 +39,8 @@ export const ContactsTable = props => {
     const [rows, setRows] = useState([])
     const [contacts, setContacts] = useState([])
     const [editedContacts, setEditedContacts] = useState([])
+    const [editContact, setEditContact] = useState()
+    const [editRowId, setEditRowId] = useState()
     const [newContacts, setNewContacts] = useState([])
     const [newContact, setNewContact] = useState()
     const [deletedContactIds, setDeletedContactIds] = useState([])
@@ -45,6 +48,8 @@ export const ContactsTable = props => {
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const { enqueueSnackbar } = useSnackbar()
     const [open, setOpen] = useState(false)
+    const [openEdit, setOpenEdit] = useState(false)
+    const [submitEdit, setSubmitEdit] = useState(false)
     const [handleRefresh, setHandleRefresh] = useState(true)
 
     async function fetchData() {    
@@ -89,10 +94,25 @@ export const ContactsTable = props => {
                 enqueueSnackbar('Error was encountered while trying to delete contacts', {variant})
             })
     }
+    async function editContacts(credentials)
+    {
+        return API.put('Contacts/Serial', JSON.stringify(credentials)
+          )
+            .then(data => {
+                var variant = 'success'
+                enqueueSnackbar('Contacts have been successfully deleted', {variant})
+                setHandleRefresh(true)
+            })
+            .catch(err => {
+                var variant = 'error'
+                enqueueSnackbar('Error was encountered while trying to delete contacts', {variant})
+            })
+    }
     async function saveData()
     {
         if(newContacts != null && newContacts.length > 0)
         {
+            newContacts.map(p => p.id = 0)
             addNewContacts(newContacts)
             setNewContacts([])
         }
@@ -101,6 +121,11 @@ export const ContactsTable = props => {
             var idsToDelete = ''
             var params = deletedContactIds.map(id => {idsToDelete +='ids=' + id + '&'})
             deleteContacts(idsToDelete)
+        }
+        if(editedContacts != null && editedContacts.length > 0)
+        {
+            editContacts(editedContacts)
+            setEditedContacts([])
         }
     }
     function undoChanges()
@@ -119,6 +144,14 @@ export const ContactsTable = props => {
     function handleClose()
     {
         setOpen(false)
+    }
+    function handleOpenEdit()
+    {
+        setOpenEdit(true)
+    }
+    function handleCloseEdit()
+    {
+        setOpenEdit(false)
     }
   function handleSuccessVariant(variant) {
     enqueueSnackbar('Contacts have been successfully refreshed', { variant })
@@ -139,7 +172,8 @@ export const ContactsTable = props => {
   {
     if(newContact != null)
         {
-            let tmpArray = [...contacts]
+            newContact.id = rows[rows.length -1].id + 1
+            let tmpArray = [...rows]
             let newArray = [...newContacts]
             newArray.push(newContact)
             tmpArray.push(...newArray)
@@ -157,12 +191,44 @@ export const ContactsTable = props => {
         setHandleRefresh(false)
     }
   }, [handleRefresh])
+
+  useEffect(() =>
+  {
+    if(submitEdit)
+    {
+        if(newContacts.length > 0 && newContacts.filter(p => p.id == editContact.id).length > 0)
+        {
+            let newTmpContactArray = [...newContacts]
+            newTmpContactArray[newContacts.findIndex(p => p.id == editContact.id)] = editContact
+            setNewContacts(newTmpContactArray)
+        }
+        else if(editedContacts.length > 0 && editedContacts.filter(p => p.id == editContact.id).length > 0)
+        {            
+            let editTmpContactArray = [...editedContacts]
+            editTmpContactArray[editedContacts.findIndex(p => p.id == editContact.id)] = editContact
+            setEditedContacts(editTmpContactArray)            
+        }
+        else{
+            let editedArray = [...editedContacts]
+            editedArray.push(editContact)
+            setEditedContacts(editedArray)
+        }
+        var tmpArray = [...rows];
+        tmpArray[editRowId] = editContact
+        setRows(tmpArray)
+        setSubmitEdit(false)
+        setEditContact(null)
+    }
+  }, [submitEdit])
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
         <SnackbarProvider maxSnack={3}>
             <FormContactModal open={open} setOpen={setOpen} handleOpen={handleOpen} handleClose={handleClose}
             newContact={newContact} setNewContact={setNewContact}
             ></FormContactModal>
+            <FormContactEditModal open={openEdit} setOpen={setOpenEdit} handleOpen={handleOpenEdit} handleClose={handleCloseEdit}
+            editContact={editContact} setEditContact={setEditContact} setSubmitEdit={setSubmitEdit}
+            ></FormContactEditModal>
         </SnackbarProvider>
         <TableContainer sx={{ minHeight: 200, maxHeight: 440 }}>
             <Table>
@@ -180,13 +246,13 @@ export const ContactsTable = props => {
                 </TableHead>
                 <TableBody>
                     {rows
-                        .map(row =>
+                        .map((row, index) =>
                         {
                             return (
-                                <TableRow hover>
+                                <TableRow hover key={{index}}>
                                     {
                                         columns
-                                            .filter(column => column.id !== 'actions')
+                                            .filter(column => column.id !== 'actions' && column.id !== 'id')
                                             .map(column => {
                                                 const value = row[column.id]
                                                 return (
@@ -209,6 +275,9 @@ export const ContactsTable = props => {
                                             variant='contained'
                                             size='small'
                                             onClick={e => {
+                                                setEditRowId(index)
+                                                setEditContact(row)
+                                                setOpenEdit(true)
                                             }}
                                         >
                                             Edit
