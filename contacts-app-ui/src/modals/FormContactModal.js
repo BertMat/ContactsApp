@@ -10,10 +10,13 @@ import Box from '@mui/material/Box'
 import Modal from '@mui/material/Modal'
 import Fade from '@mui/material/Fade'
 import Button from '@mui/material/Button'
+import ButtonGroup from '@mui/material/ButtonGroup'
 import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 // ** Icons Imports
 import Phone from 'mdi-material-ui/Phone'
+import AddIcon from '@mui/icons-material/AddCircle'
+import UndoIcon from '@mui/icons-material/Undo'
 import AccountOutline from 'mdi-material-ui/AccountOutline'
 import LocalPostOffice from '@mui/icons-material/LocalPostOffice'
 import LocationCity from '@mui/icons-material/LocationCity'
@@ -221,9 +224,16 @@ const FormContactModal = ({ open, setOpen, handleOpen, handleClose, newContact, 
                     </LocalizationProvider>
                   </Grid>
                   <Grid item xs={12}>
-                    <Button type='submit' variant='contained' size='medium'>
+                  <ButtonGroup variant='text' aria-label='outlined primary button group' sx={{ margin: 1}}>
+                    <Button 
+                        startIcon={<AddIcon></AddIcon>} type='submit' variant='contained' size='medium'>
                       Submit
                     </Button>
+                    <Button onClick={handleClose}
+                        startIcon={<UndoIcon></UndoIcon>}
+                        color='warning'
+                        variant='contained'>Cancel</Button>
+                    </ButtonGroup>
                   </Grid>
                 </Grid>
               </form>

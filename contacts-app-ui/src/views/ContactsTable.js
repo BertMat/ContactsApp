@@ -51,6 +51,7 @@ export const ContactsTable = props => {
     const [openEdit, setOpenEdit] = useState(false)
     const [submitEdit, setSubmitEdit] = useState(false)
     const [handleRefresh, setHandleRefresh] = useState(true)
+    const [unsavedData, setUnsavedDate] = useState(false)
 
     async function fetchData() {    
         return API.get('Contacts', {
@@ -114,19 +115,24 @@ export const ContactsTable = props => {
         {
             newContacts.map(p => p.id = 0)
             addNewContacts(newContacts)
-            setNewContacts([])
         }
         if(deletedContactIds != null && deletedContactIds.length > 0)
         {
             var idsToDelete = ''
-            var params = deletedContactIds.map(id => {idsToDelete +='ids=' + id + '&'})
+            deletedContactIds.map(id => {idsToDelete +='ids=' + id + '&'})
             deleteContacts(idsToDelete)
         }
         if(editedContacts != null && editedContacts.length > 0)
         {
             editContacts(editedContacts)
-            setEditedContacts([])
         }
+        
+        setNewContact(null)
+        setNewContacts([])
+        setDeletedContactIds([])
+        setEditContact(null)
+        setEditedContacts([])
+        setUnsavedDate(false)
     }
     function undoChanges()
     {
@@ -135,6 +141,7 @@ export const ContactsTable = props => {
         setNewContacts([])
         setDeletedContactIds([])
         setEditedContacts([])
+        setUnsavedDate(false)
     }
 
     function handleOpen()
@@ -180,6 +187,7 @@ export const ContactsTable = props => {
             setRows(tmpArray)
             setNewContacts(newArray)
             setNewContact(null)
+            setUnsavedDate(true)
         }
   }, [newContact])
 
@@ -208,7 +216,8 @@ export const ContactsTable = props => {
             editTmpContactArray[editedContacts.findIndex(p => p.id == editContact.id)] = editContact
             setEditedContacts(editTmpContactArray)            
         }
-        else{
+        else
+        {
             let editedArray = [...editedContacts]
             editedArray.push(editContact)
             setEditedContacts(editedArray)
@@ -218,6 +227,7 @@ export const ContactsTable = props => {
         setRows(tmpArray)
         setSubmitEdit(false)
         setEditContact(null)
+        setUnsavedDate(true)
     }
   }, [submitEdit])
   return (
@@ -249,7 +259,7 @@ export const ContactsTable = props => {
                         .map((row, index) =>
                         {
                             return (
-                                <TableRow hover key={{index}}>
+                                <TableRow hover key={row.id}>
                                     {
                                         columns
                                             .filter(column => column.id !== 'actions' && column.id !== 'id')
@@ -323,12 +333,14 @@ export const ContactsTable = props => {
         type='submit'
         variant='contained'>Add new contact</Button>
         <Button onClick={saveData}
-        startIcon={<SaveIcon></SaveIcon>}    
+        startIcon={<SaveIcon></SaveIcon>}
+        disabled={!unsavedData}
         color='info'
         type='submit'
         variant='contained'>Save changes</Button>
         <Button onClick={undoChanges}
         startIcon={<UndoIcon></UndoIcon>}
+        disabled={!unsavedData}
         color='warning'
         variant='contained'>Cancel</Button>
         </ButtonGroup>
